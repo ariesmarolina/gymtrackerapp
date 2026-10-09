@@ -52,22 +52,41 @@ app.get('/api/status', (req, res) => {
 });
 
 // Helper: parse clean JSON from model output
+// Helper: parse clean JSON from model output (robust version)
 function cleanAndParseJSON(text) {
   if (!text) throw new Error('Empty response from AI vision provider');
   let cleaned = text.trim();
-  // Strip markdown code fences if present
+
+  // 1. Strip markdown code fences if present
   if (cleaned.startsWith('```json')) {
     cleaned = cleaned.replace(/^```json\s*/i, '').replace(/\s*```$/, '');
   } else if (cleaned.startsWith('```')) {
     cleaned = cleaned.replace(/^```\s*/, '').replace(/\s*```$/, '');
   }
-  // Extract outermost JSON object if model outputs preamble
+
+  // 2. Extract outermost JSON object if model outputs preamble/postamble
   const firstBrace = cleaned.indexOf('{');
   const lastBrace = cleaned.lastIndexOf('}');
   if (firstBrace !== -1 && lastBrace !== -1 && lastBrace > firstBrace) {
     cleaned = cleaned.substring(firstBrace, lastBrace + 1);
   }
-  return JSON.parse(cleaned.trim());
+
+  // 3. Remove JavaScript-style comments (// and /* */)
+  cleaned = cleaned.replace(/\/\*[\s\S]*?\*\//g, '');
+  cleaned = cleaned.replace(/(^|[^:])\/\/.*$/gm, '$1');
+
+  // 4. Remove trailing commas before } or ]
+  cleaned = cleaned.replace(/,\s*([}\]])/g, '$1');
+
+  // 5. Try standard parse
+  try {
+    return JSON.parse(cleaned);
+  } catch (err) {
+    console.error('JSON Parse failed. Raw cleaned text:');
+    console.error(cleaned.substring(0, 500));
+    console.error('Original error:', err.message);
+    throw new Error(`AI returned invalid JSON: ${err.message}`);
+  }
 }
 
 // System prompt for vision analysis
