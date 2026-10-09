@@ -1,0 +1,818 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>IronTrack — Gym Calorie &amp; Protein Tracker</title>
+  
+  <!-- Mobile & iOS Safari 15 Meta Tags -->
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="IronTrack">
+  <meta name="theme-color" content="#121316">
+  <meta name="description" content="Mobile-first calorie and protein tracker built for gym progress, bulking, and iOS 15 Safari.">
+  
+  <!-- Web Manifest & Icons -->
+  <link rel="manifest" href="/manifest.json">
+  <link rel="apple-touch-icon" href="/icons/apple-touch-icon.png">
+  <link rel="icon" type="image/png" href="/icons/icon-192.png">
+
+  <!-- Stylesheet -->
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+
+  <!-- Top App Bar -->
+  <header class="app-header">
+    <div class="header-inner">
+      <div class="brand-group">
+        <div class="brand-badge">⚡</div>
+        <div class="brand-text">
+          <span class="brand-name">IronTrack</span>
+          <span class="brand-sub">Bulking &amp; Gym Tracker</span>
+        </div>
+      </div>
+
+      <div class="header-status-group">
+        <div id="offlineIndicator" class="offline-pill" style="display: none;">
+          <span class="pulse-dot"></span> Offline
+        </div>
+        <button id="headerHelpBtn" class="header-icon-btn" onclick="window.pwaManager.openIosGuideModal()" title="Install PWA Guide">
+          📲 PWA
+        </button>
+      </div>
+    </div>
+
+    <!-- Date Navigator -->
+    <div class="date-navigator-bar">
+      <button id="prevDateBtn" class="date-nav-btn" aria-label="Previous Day">‹</button>
+      
+      <div class="date-center-group">
+        <label for="globalDateInput" class="date-display-label">
+          <span id="activeDateLabel">Today</span>
+          <span class="calendar-icon">📅</span>
+        </label>
+        <input type="date" id="globalDateInput" class="hidden-date-input">
+      </div>
+
+      <button id="nextDateBtn" class="date-nav-btn" aria-label="Next Day">›</button>
+      <button id="todayDateBtn" class="today-badge-btn">Today</button>
+    </div>
+  </header>
+
+  <!-- iOS Add to Home Screen Banner (Dismissible) -->
+  <aside id="iosInstallBanner" class="ios-install-banner" style="display: none;" aria-label="Install App Notice">
+    <div class="iib-content">
+      <span class="iib-icon">📲</span>
+      <div class="iib-text">
+        <strong>Install on iPhone 7 Plus:</strong> Tap <span class="share-icon">􀈂</span> Share then <strong>Add to Home Screen</strong>.
+      </div>
+    </div>
+    <div class="iib-actions">
+      <button class="iib-btn" onclick="window.pwaManager.openIosGuideModal()">Instructions</button>
+      <button class="iib-close" onclick="window.pwaManager.dismissIosBanner()">✕</button>
+    </div>
+  </aside>
+
+  <!-- Main Scrollable App Container -->
+  <main class="app-content-container">
+
+    <!-- ========================================== -->
+    <!-- TAB 1: DASHBOARD (HOME)                    -->
+    <!-- ========================================== -->
+    <section id="view-home" class="tab-view active">
+      
+      <!-- Primary Nutrient Hero Card -->
+      <div class="hero-target-card">
+        <div class="hero-main-row">
+          <!-- Calories Hero Box -->
+          <div class="hero-box cal-box">
+            <div class="hero-box-label">CALORIES</div>
+            <div class="hero-box-main">
+              <span class="big-metric" id="dashCaloriesRemaining">0</span>
+              <span class="metric-unit">kcal</span>
+            </div>
+            <div class="hero-box-sub" id="dashCaloriesRemLabel">calories left</div>
+            <div class="hero-stat-detail">
+              <span>Consumed: <strong id="dashCaloriesConsumed">0</strong></span>
+              <span>Goal: <span id="dashCaloriesTarget">2500</span></span>
+            </div>
+            <!-- Progress Bar -->
+            <div class="progress-track">
+              <div id="barCaloriesFill" class="progress-fill cal-gradient" style="width: 0%;"></div>
+            </div>
+          </div>
+
+          <!-- Protein Hero Box -->
+          <div class="hero-box pro-box">
+            <div class="hero-box-label">PROTEIN (GYM TARGET)</div>
+            <div class="hero-box-main">
+              <span class="big-metric text-emerald" id="dashProteinConsumed">0</span>
+              <span class="metric-unit">/ <span id="dashProteinTarget">160</span>g</span>
+            </div>
+            <div class="hero-box-sub">
+              Remaining: <strong id="dashProteinRemaining">160</strong>g to hit target
+            </div>
+            <!-- Progress Bar -->
+            <div class="progress-track">
+              <div id="barProteinFill" class="progress-fill pro-gradient" style="width: 0%;"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Secondary Macros Row (Carbs & Fats) -->
+        <div class="secondary-macros-grid">
+          <div class="macro-mini-card">
+            <div class="mm-header">
+              <span class="mm-label">Carbs</span>
+              <span class="mm-val"><strong id="dashCarbsConsumed">0</strong> / <span id="dashCarbsTarget">280</span>g</span>
+            </div>
+            <div class="progress-track-sm">
+              <div id="barCarbsFill" class="progress-fill carb-gradient" style="width: 0%;"></div>
+            </div>
+          </div>
+
+          <div class="macro-mini-card">
+            <div class="mm-header">
+              <span class="mm-label">Fats</span>
+              <span class="mm-val"><strong id="dashFatConsumed">0</strong> / <span id="dashFatTarget">65</span>g</span>
+            </div>
+            <div class="progress-track-sm">
+              <div id="barFatFill" class="progress-fill fat-gradient" style="width: 0%;"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Quick Action Shortcuts -->
+      <div class="quick-action-strip">
+        <button class="qa-btn btn-scan-shortcut" onclick="window.app.switchTab('scan')">
+          <span class="qa-icon">📷</span>
+          <span>Scan Food</span>
+        </button>
+        <button class="qa-btn btn-search-shortcut" onclick="window.app.openAddFoodModal('lunch')">
+          <span class="qa-icon">🔍</span>
+          <span>Search Foods</span>
+        </button>
+        <button class="qa-btn btn-custom-shortcut" onclick="window.app.openCustomFoodModal()">
+          <span class="qa-icon">➕</span>
+          <span>Custom Food</span>
+        </button>
+      </div>
+
+      <!-- Today's Meals Section -->
+      <div class="section-title-row">
+        <h2>Today's Meals</h2>
+        <button class="btn-text-link" onclick="window.app.switchTab('foodlog')">View Food Log →</button>
+      </div>
+
+      <!-- Breakfast Summary Card -->
+      <div class="dashboard-meal-card">
+        <div class="dm-header">
+          <div class="dm-title-group">
+            <span class="meal-emoji">🍳</span>
+            <span class="meal-name">Breakfast</span>
+          </div>
+          <div class="dm-macros">
+            <span class="dm-cal"><strong id="dash_breakfast_cals">0</strong> kcal</span>
+            <span class="dm-pro"><strong id="dash_breakfast_pro">0</strong>g pro</span>
+            <button class="dm-add-icon-btn" onclick="window.app.openAddFoodModal('breakfast')" aria-label="Add Breakfast">+</button>
+          </div>
+        </div>
+        <div id="dash_breakfast_items" class="dm-items-preview"></div>
+      </div>
+
+      <!-- Lunch Summary Card -->
+      <div class="dashboard-meal-card">
+        <div class="dm-header">
+          <div class="dm-title-group">
+            <span class="meal-emoji">🍗</span>
+            <span class="meal-name">Lunch</span>
+          </div>
+          <div class="dm-macros">
+            <span class="dm-cal"><strong id="dash_lunch_cals">0</strong> kcal</span>
+            <span class="dm-pro"><strong id="dash_lunch_pro">0</strong>g pro</span>
+            <button class="dm-add-icon-btn" onclick="window.app.openAddFoodModal('lunch')" aria-label="Add Lunch">+</button>
+          </div>
+        </div>
+        <div id="dash_lunch_items" class="dm-items-preview"></div>
+      </div>
+
+      <!-- Dinner Summary Card -->
+      <div class="dashboard-meal-card">
+        <div class="dm-header">
+          <div class="dm-title-group">
+            <span class="meal-emoji">🍲</span>
+            <span class="meal-name">Dinner</span>
+          </div>
+          <div class="dm-macros">
+            <span class="dm-cal"><strong id="dash_dinner_cals">0</strong> kcal</span>
+            <span class="dm-pro"><strong id="dash_dinner_pro">0</strong>g pro</span>
+            <button class="dm-add-icon-btn" onclick="window.app.openAddFoodModal('dinner')" aria-label="Add Dinner">+</button>
+          </div>
+        </div>
+        <div id="dash_dinner_items" class="dm-items-preview"></div>
+      </div>
+
+      <!-- Snacks Summary Card -->
+      <div class="dashboard-meal-card">
+        <div class="dm-header">
+          <div class="dm-title-group">
+            <span class="meal-emoji">🍌</span>
+            <span class="meal-name">Snacks &amp; Whey</span>
+          </div>
+          <div class="dm-macros">
+            <span class="dm-cal"><strong id="dash_snack_cals">0</strong> kcal</span>
+            <span class="dm-pro"><strong id="dash_snack_pro">0</strong>g pro</span>
+            <button class="dm-add-icon-btn" onclick="window.app.openAddFoodModal('snack')" aria-label="Add Snack">+</button>
+          </div>
+        </div>
+        <div id="dash_snack_items" class="dm-items-preview"></div>
+      </div>
+
+      <div class="spacer-bottom"></div>
+    </section>
+
+    <!-- ========================================== -->
+    <!-- TAB 2: DETAILED FOOD LOG                  -->
+    <!-- ========================================== -->
+    <section id="view-foodlog" class="tab-view">
+      <div class="view-header-row">
+        <div>
+          <h2>Daily Food Log</h2>
+          <p class="view-subtitle">Review, adjust, edit, or copy previous meals</p>
+        </div>
+        <button class="btn-primary-sm" onclick="window.app.openAddFoodModal('lunch')">+ Add Food</button>
+      </div>
+
+      <!-- Meal containers dynamically rendered here -->
+      <div id="foodLogMealContainers" class="food-log-blocks-wrap"></div>
+
+      <div class="spacer-bottom"></div>
+    </section>
+
+    <!-- ========================================== -->
+    <!-- TAB 3: FOOD SCANNER (AI VISION)            -->
+    <!-- ========================================== -->
+    <section id="view-scan" class="tab-view">
+      <div class="view-header-row">
+        <div>
+          <h2>AI Food Scanner</h2>
+          <p class="view-subtitle">Snap a plate or carinderia meal to estimate macros</p>
+        </div>
+        <div id="aiStatusBadge" class="status-badge-pill">Checking AI...</div>
+      </div>
+
+      <!-- Prominent Medical / Nutrition Accuracy Disclaimer Banner -->
+      <div class="approximate-disclaimer-card">
+        <span class="adc-icon">ℹ️</span>
+        <div class="adc-text">
+          <strong>Approximate Estimates:</strong> Photos alone cannot determine exact weights, sodium, or hidden cooking oils. Use this as a fast starting point and verify portion sizes below before confirming.
+        </div>
+      </div>
+
+      <!-- Scanner Error / Offline Banner -->
+      <div id="scannerErrorBanner" class="scanner-error-banner" style="display: none;">
+        <div class="seb-header">
+          <span class="seb-icon">⚠️</span>
+          <span id="scannerErrorMessage">Scanner Notice</span>
+        </div>
+        <button id="scannerManualFallbackBtn" class="btn-secondary-sm">Enter Food Manually Instead</button>
+      </div>
+
+      <!-- Idle Camera Selection Screen -->
+      <div id="scannerIdleContainer" class="scanner-idle-card">
+        <div class="camera-hero-target">
+          <div class="camera-viewfinder-graphic">
+            <div class="corner tl"></div>
+            <div class="corner tr"></div>
+            <div class="corner bl"></div>
+            <div class="corner br"></div>
+            <span class="camera-center-icon">📸</span>
+          </div>
+        </div>
+
+        <p class="scanner-hint-text">
+          Hold camera steady above your food. Works with Filipino dishes, gym plates (chicken &amp; rice), and carinderia meals.
+        </p>
+
+        <!-- Hidden Native File & Camera Inputs for iOS 15 Safari -->
+        <input type="file" id="cameraInput" accept="image/*" capture="environment" style="display: none;">
+        <input type="file" id="galleryInput" accept="image/*" style="display: none;">
+
+        <div class="scanner-button-stack">
+          <button class="btn-large-camera" onclick="document.getElementById('cameraInput').click()">
+            <span class="blc-icon">📷</span>
+            <span>Take Food Photo</span>
+          </button>
+
+          <button class="btn-large-gallery" onclick="document.getElementById('galleryInput').click()">
+            <span class="blc-icon">🖼️</span>
+            <span>Upload from Photos</span>
+          </button>
+
+          <button class="btn-text-manual" onclick="window.app.openAddFoodModal('lunch')">
+            or search / enter manually without photo →
+          </button>
+        </div>
+      </div>
+
+      <!-- Loading / Scanning Animation State -->
+      <div id="scannerLoadingContainer" class="scanner-loading-card" style="display: none;">
+        <div class="scanner-preview-wrapper">
+          <img id="scannerPreviewImg" alt="Food preview" class="scanner-img-preview" style="display: none;">
+          <div class="laser-scanner-line"></div>
+        </div>
+        <div class="scanner-loading-text">
+          <div class="spinner-ring"></div>
+          <p id="scannerStatusText">Analyzing food items with AI Vision...</p>
+          <span class="sub-loading-msg">Estimating chicken, rice, sauces, and protein content</span>
+        </div>
+      </div>
+
+      <!-- Scan Results Review & Confirm Screen -->
+      <div id="scannerResultsContainer" class="scanner-results-card" style="display: none;">
+        <div class="results-top-header">
+          <div>
+            <span class="results-badge">AI ESTIMATE READY</span>
+            <h3 id="scannerMealSummary" class="results-title">Detected Meal</h3>
+          </div>
+          <button class="btn-retake" onclick="window.scanner.resetScanner()">✕ Retake</button>
+        </div>
+
+        <div class="select-items-hint">
+          Check the items you want to log, adjust portion weights if needed:
+        </div>
+
+        <!-- Detected items list with checkboxes & editable grams -->
+        <div id="scannedItemsList" class="scanned-items-list"></div>
+
+        <!-- Totals Card -->
+        <div class="scan-totals-card">
+          <div class="st-label">SELECTED MEAL TOTALS (APPROX)</div>
+          <div class="st-metrics-row">
+            <div class="st-metric">
+              <span class="st-val" id="scannerTotalCals">0</span>
+              <span class="st-unit">kcal</span>
+            </div>
+            <div class="st-metric">
+              <span class="st-val text-emerald" id="scannerTotalProtein">0g</span>
+              <span class="st-unit">protein</span>
+            </div>
+            <div class="st-metric">
+              <span class="st-val" id="scannerTotalCarbs">0g</span>
+              <span class="st-unit">carbs</span>
+            </div>
+            <div class="st-metric">
+              <span class="st-val" id="scannerTotalFat">0g</span>
+              <span class="st-unit">fat</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Add to which meal dropdown -->
+        <div class="log-meal-selector-row">
+          <label for="scannerMealTypeSelect">Add to Meal:</label>
+          <select id="scannerMealTypeSelect" class="styled-select-inline">
+            <option value="breakfast">Breakfast</option>
+            <option value="lunch" selected>Lunch</option>
+            <option value="dinner">Dinner</option>
+            <option value="snack">Snack / Supplement</option>
+          </select>
+        </div>
+
+        <!-- Confirm Button -->
+        <button id="scannerConfirmBtn" class="btn-confirm-scan" onclick="window.scanner.confirmAddSelected()">
+          Confirm &amp; Add to Food Log
+        </button>
+      </div>
+
+      <div class="spacer-bottom"></div>
+    </section>
+
+    <!-- ========================================== -->
+    <!-- TAB 4: GYM PROGRESS & BODY WEIGHT         -->
+    <!-- ========================================== -->
+    <section id="view-progress" class="tab-view">
+      <div class="view-header-row">
+        <div>
+          <h2>Gym Progress</h2>
+          <p class="view-subtitle">Body weight trends, bulking consistency &amp; lifting notes</p>
+        </div>
+      </div>
+
+      <!-- Quick Weight Logger Form -->
+      <div class="card-standard">
+        <div class="card-header-simple">
+          <h3>Log Today's Body Weight</h3>
+          <span class="info-badge">Fast Morning Weigh-in</span>
+        </div>
+        <form id="quickWeightForm" class="quick-weight-row">
+          <div class="input-with-suffix-large">
+            <input type="number" id="quickWeightInput" step="0.1" min="30" max="250" placeholder="70.5" required>
+            <span class="suffix-text">kg</span>
+          </div>
+          <button type="submit" class="btn-save-weight">Save</button>
+        </form>
+      </div>
+
+      <!-- Weight Trend Card with HTML5 Canvas Chart -->
+      <div class="card-standard">
+        <div class="card-header-with-controls">
+          <div>
+            <h3>Weight Trend</h3>
+            <div class="weekly-avg-indicator">
+              Weekly Avg: <strong id="weeklyAverageWeightDisplay">-- kg</strong>
+              <span id="weeklyWeightChangeDisplay" class="trend-neutral"></span>
+            </div>
+          </div>
+          <div class="chart-range-toggles">
+            <button class="chart-range-btn" data-days="7">7D</button>
+            <button class="chart-range-btn active" data-days="14">14D</button>
+            <button class="chart-range-btn" data-days="30">30D</button>
+          </div>
+        </div>
+
+        <div class="canvas-chart-container">
+          <canvas id="weightProgressCanvas"></canvas>
+        </div>
+      </div>
+
+      <!-- Calorie & Protein Weekly Consistency Scorecard -->
+      <div class="card-standard">
+        <div class="card-header-simple">
+          <h3>Weekly Nutrition Consistency</h3>
+          <span class="info-badge">Last 7 Days</span>
+        </div>
+
+        <div id="goalAdherenceScorecard" class="consistency-scorecard-grid"></div>
+
+        <div id="weeklyConsistencyContainer" class="consistency-days-list"></div>
+      </div>
+
+      <!-- Workout Notes Card -->
+      <div class="card-standard">
+        <div class="card-header-simple">
+          <div>
+            <h3>Workout Notes for Active Date</h3>
+            <span id="workoutSaveStatus" class="save-status-indicator"></span>
+          </div>
+        </div>
+
+        <!-- Quick Exercise Tags -->
+        <div class="quick-tags-scroll">
+          <button class="workout-tag-btn" onclick="window.progressTracker.appendWorkoutTag('Push Day')">+ Push Day</button>
+          <button class="workout-tag-btn" onclick="window.progressTracker.appendWorkoutTag('Pull Day')">+ Pull Day</button>
+          <button class="workout-tag-btn" onclick="window.progressTracker.appendWorkoutTag('Leg Day')">+ Leg Day</button>
+          <button class="workout-tag-btn" onclick="window.progressTracker.appendWorkoutTag('Bench Press')">+ Bench Press</button>
+          <button class="workout-tag-btn" onclick="window.progressTracker.appendWorkoutTag('Squats')">+ Squats</button>
+          <button class="workout-tag-btn" onclick="window.progressTracker.appendWorkoutTag('Rest Day')">+ Rest Day</button>
+        </div>
+
+        <textarea id="workoutNotesTextarea" class="workout-notes-textarea" 
+          placeholder="e.g. Incline DB Bench 30kg 4x8, Lat Pulldown 60kg 3x10, felt strong today!"></textarea>
+      </div>
+
+      <div class="spacer-bottom"></div>
+    </section>
+
+    <!-- ========================================== -->
+    <!-- TAB 5: SETTINGS & NUTRITION GOALS         -->
+    <!-- ========================================== -->
+    <section id="view-settings" class="tab-view">
+      <div class="view-header-row">
+        <div>
+          <h2>Goals &amp; Settings</h2>
+          <p class="view-subtitle">Tailor your bulking targets, macros, and backup data</p>
+        </div>
+      </div>
+
+      <!-- Goals Form -->
+      <div class="card-standard">
+        <div class="card-header-simple">
+          <h3>Daily Nutrition Targets</h3>
+          <button type="button" class="btn-text-link" onclick="window.app.calculateRecommendedMacros()">⚡ Auto-Calculate</button>
+        </div>
+
+        <form id="settingsGoalsForm" class="settings-form">
+          <div class="form-row-2">
+            <div class="form-group">
+              <label for="setCalorieTarget">Calorie Target (kcal)</label>
+              <input type="number" id="setCalorieTarget" class="styled-input" required min="1000" max="8000" step="50">
+            </div>
+            <div class="form-group">
+              <label for="setProteinTarget">Protein Target (g)</label>
+              <input type="number" id="setProteinTarget" class="styled-input" required min="40" max="400" step="5">
+            </div>
+          </div>
+
+          <div class="form-row-2">
+            <div class="form-group">
+              <label for="setCarbsTarget">Carbohydrates Target (g)</label>
+              <input type="number" id="setCarbsTarget" class="styled-input" required min="50" max="800" step="5">
+            </div>
+            <div class="form-group">
+              <label for="setFatTarget">Fat Target (g)</label>
+              <input type="number" id="setFatTarget" class="styled-input" required min="20" max="250" step="5">
+            </div>
+          </div>
+
+          <div class="form-row-2">
+            <div class="form-group">
+              <label for="setCurrentWeight">Current Weight (kg)</label>
+              <input type="number" id="setCurrentWeight" class="styled-input" step="0.1" min="30" max="250">
+            </div>
+            <div class="form-group">
+              <label for="setTargetWeight">Target Weight (kg)</label>
+              <input type="number" id="setTargetWeight" class="styled-input" step="0.1" min="30" max="250">
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="setGoalType">Fitness Phase</label>
+            <select id="setGoalType" class="styled-select">
+              <option value="lean_bulk">Lean Bulk (+250-300 kcal surplus)</option>
+              <option value="maintain">Maintain Weight</option>
+              <option value="fat_loss">Fat Loss / Cut (-300-400 kcal deficit)</option>
+            </select>
+          </div>
+
+          <button type="submit" class="btn-primary-block">Save Nutrition Targets</button>
+        </form>
+      </div>
+
+      <!-- Backup & Data Persistence Card -->
+      <div class="card-standard">
+        <div class="card-header-simple">
+          <h3>Data Backup &amp; Restore</h3>
+        </div>
+        <p class="card-desc-text">
+          All your food logs, custom items, and weight history are stored securely in your browser's IndexedDB. Export a JSON file to keep an offline backup or transfer to another phone.
+        </p>
+
+        <div class="backup-actions-row">
+          <button id="exportDataBtn" class="btn-secondary-block">
+            <span>📥 Export Backup (JSON)</span>
+          </button>
+
+          <label class="btn-outline-block">
+            <span>📤 Import Backup (JSON)</span>
+            <input type="file" id="importDataInput" accept=".json" style="display: none;">
+          </label>
+        </div>
+      </div>
+
+      <!-- App & Device Compatibility Info -->
+      <div class="card-standard">
+        <div class="card-header-simple">
+          <h3>Device &amp; Compatibility Info</h3>
+        </div>
+        <div class="info-list">
+          <div class="info-item">
+            <span class="info-label">Target Hardware:</span>
+            <span class="info-value">iPhone 7 Plus (5.5-inch Retina HD)</span>
+          </div>
+          <div class="info-item">
+            <span class="info-label">Browser:</span>
+            <span class="info-value">Safari on iOS 15 (Standard ES2020)</span>
+          </div>
+          <div class="info-item">
+            <span class="info-label">Offline Capability:</span>
+            <span class="info-value text-emerald">Active (Service Worker + IndexedDB)</span>
+          </div>
+          <div class="info-item">
+            <span class="info-label">AI Scanner Proxy:</span>
+            <span class="info-value">Secure Node.js Backend Proxy</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="spacer-bottom"></div>
+    </section>
+
+  </main>
+
+  <!-- ========================================== -->
+  <!-- BOTTOM NAVIGATION BAR (iOS 15 SAFE AREA)    -->
+  <!-- ========================================== -->
+  <nav class="bottom-nav-bar" aria-label="Main Navigation">
+    <button class="bottom-nav-item active" data-tab="home">
+      <span class="nav-icon">📊</span>
+      <span class="nav-label">Dashboard</span>
+    </button>
+    <button class="bottom-nav-item" data-tab="foodlog">
+      <span class="nav-icon">📝</span>
+      <span class="nav-label">Food Log</span>
+    </button>
+    <button class="bottom-nav-item nav-scan-item" data-tab="scan">
+      <div class="scan-pill-icon">📷</div>
+      <span class="nav-label">Scan</span>
+    </button>
+    <button class="bottom-nav-item" data-tab="progress">
+      <span class="nav-icon">📈</span>
+      <span class="nav-label">Progress</span>
+    </button>
+    <button class="bottom-nav-item" data-tab="settings">
+      <span class="nav-icon">⚙️</span>
+      <span class="nav-label">Settings</span>
+    </button>
+  </nav>
+
+  <!-- ========================================== -->
+  <!-- MODAL: ADD / SEARCH FOOD & PORTION ADJUST   -->
+  <!-- ========================================== -->
+  <div id="addFoodModal" class="modal-overlay" style="display: none;">
+    <div class="modal-dialog">
+      <div class="modal-header">
+        <h3 id="addFoodModalTitle">Add Food Entry</h3>
+        <button class="modal-close-btn">&times;</button>
+      </div>
+
+      <!-- Meal Target Selector -->
+      <div class="modal-meal-selector-wrap">
+        <label for="modalMealSelect">Meal Category:</label>
+        <select id="modalMealSelect" class="styled-select-inline">
+          <option value="breakfast">Breakfast</option>
+          <option value="lunch">Lunch</option>
+          <option value="dinner">Dinner</option>
+          <option value="snack">Snack / Supplements</option>
+        </select>
+      </div>
+
+      <!-- Search Input -->
+      <div class="search-input-wrap">
+        <span class="search-icon">🔍</span>
+        <input type="text" id="foodSearchInput" class="styled-search-input" placeholder="Search chicken, rice, tuna, bangus...">
+      </div>
+
+      <!-- Category Filter Tags -->
+      <div class="filter-tags-scroll">
+        <button class="food-filter-tag active" data-filter="all">All</button>
+        <button class="food-filter-tag" data-filter="staples">Gym Staples</button>
+        <button class="food-filter-tag" data-filter="filipino">Filipino Dishes</button>
+        <button class="food-filter-tag" data-filter="favorites">★ Favorites</button>
+        <button class="food-filter-tag" data-filter="custom">Custom</button>
+      </div>
+
+      <!-- Search Results List -->
+      <div id="foodSearchResultsList" class="search-results-container"></div>
+
+      <!-- Food Portion Adjuster (Appears when item is selected) -->
+      <div id="foodAdjusterSection" class="food-adjuster-card" style="display: none;">
+        <div class="fac-header">
+          <strong id="adjusterFoodName">Food Portion</strong>
+          <span class="fac-sub">Live Macro Recalculation</span>
+        </div>
+
+        <div class="adjuster-controls-row">
+          <div class="input-col">
+            <label class="field-label" for="servingAdjustAmount">Serving Amount</label>
+            <input type="number" id="servingAdjustAmount" class="styled-input-sm" step="0.5" min="0.1" value="100">
+          </div>
+          <div class="input-col">
+            <label class="field-label" for="servingAdjustUnit">Unit</label>
+            <select id="servingAdjustUnit" class="styled-select-sm"></select>
+          </div>
+        </div>
+
+        <!-- Live Recalculated Nutrients Display -->
+        <div class="adjuster-macros-row">
+          <div class="adj-macro-box">
+            <span class="amb-val" id="adjusterCalVal">0</span>
+            <span class="amb-lbl">kcal</span>
+          </div>
+          <div class="adj-macro-box pro">
+            <span class="amb-val" id="adjusterProVal">0g</span>
+            <span class="amb-lbl">protein</span>
+          </div>
+          <div class="adj-macro-box">
+            <span class="amb-val" id="adjusterCarbVal">0g</span>
+            <span class="amb-lbl">carbs</span>
+          </div>
+          <div class="adj-macro-box">
+            <span class="amb-val" id="adjusterFatVal">0g</span>
+            <span class="amb-lbl">fat</span>
+          </div>
+        </div>
+
+        <button class="btn-primary-block" onclick="window.app.commitAdjustedFoodToLog()">
+          Add to Food Log
+        </button>
+      </div>
+
+      <div class="modal-footer-action">
+        <button class="btn-text-link" onclick="window.app.openCustomFoodModal()">+ Can't find it? Create custom food</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========================================== -->
+  <!-- MODAL: CREATE CUSTOM FOOD                  -->
+  <!-- ========================================== -->
+  <div id="customFoodModal" class="modal-overlay" style="display: none;">
+    <div class="modal-dialog">
+      <div class="modal-header">
+        <h3>Create Custom Food</h3>
+        <button class="modal-close-btn">&times;</button>
+      </div>
+
+      <form id="customFoodForm" onsubmit="window.app.saveCustomFoodForm(event)" class="settings-form">
+        <div class="form-group">
+          <label for="cfNameInput">Food Name</label>
+          <input type="text" id="cfNameInput" class="styled-input" placeholder="e.g. Century Tuna Spicy" required>
+        </div>
+
+        <div class="form-row-2">
+          <div class="form-group">
+            <label for="cfServingAmountInput">Serving Size</label>
+            <input type="number" id="cfServingAmountInput" class="styled-input" value="100" min="0.1" step="0.1" required>
+          </div>
+          <div class="form-group">
+            <label for="cfServingUnitInput">Serving Unit</label>
+            <input type="text" id="cfServingUnitInput" class="styled-input" value="g" placeholder="g, piece, cup, ml" required>
+          </div>
+        </div>
+
+        <div class="form-row-2">
+          <div class="form-group">
+            <label for="cfCaloriesInput">Calories (kcal)</label>
+            <input type="number" id="cfCaloriesInput" class="styled-input" placeholder="150" required min="0" step="1">
+          </div>
+          <div class="form-group">
+            <label for="cfProteinInput">Protein (g)</label>
+            <input type="number" id="cfProteinInput" class="styled-input" placeholder="25" required min="0" step="0.1">
+          </div>
+        </div>
+
+        <div class="form-row-2">
+          <div class="form-group">
+            <label for="cfCarbsInput">Carbs (g)</label>
+            <input type="number" id="cfCarbsInput" class="styled-input" placeholder="0" min="0" step="0.1" value="0">
+          </div>
+          <div class="form-group">
+            <label for="cfFatInput">Fat (g)</label>
+            <input type="number" id="cfFatInput" class="styled-input" placeholder="2" min="0" step="0.1" value="0">
+          </div>
+        </div>
+
+        <button type="submit" class="btn-primary-block">Save Custom Food</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- ========================================== -->
+  <!-- MODAL: IPHONE 7 PLUS PWA INSTALL GUIDE     -->
+  <!-- ========================================== -->
+  <div id="iosGuideModal" class="modal-overlay" style="display: none;">
+    <div class="modal-dialog">
+      <div class="modal-header">
+        <h3>Install on iPhone 7 Plus</h3>
+        <button class="modal-close-btn" onclick="window.pwaManager.closeIosGuideModal()">&times;</button>
+      </div>
+
+      <div class="guide-steps-list">
+        <div class="guide-step-item">
+          <div class="gsi-num">1</div>
+          <div class="gsi-text">
+            Open this website in <strong>Safari</strong> on your iPhone 7 Plus.
+          </div>
+        </div>
+
+        <div class="guide-step-item">
+          <div class="gsi-num">2</div>
+          <div class="gsi-text">
+            Tap the <strong>Share</strong> button at the bottom of Safari (the square icon with the arrow pointing up: <span class="share-icon">􀈂</span>).
+          </div>
+        </div>
+
+        <div class="guide-step-item">
+          <div class="gsi-num">3</div>
+          <div class="gsi-text">
+            Scroll down and select <strong>"Add to Home Screen"</strong> (➕).
+          </div>
+        </div>
+
+        <div class="guide-step-item">
+          <div class="gsi-num">4</div>
+          <div class="gsi-text">
+            Tap <strong>"Add"</strong> in the top-right corner. IronTrack will now launch fullscreen as an offline-ready standalone app!
+          </div>
+        </div>
+      </div>
+
+      <button class="btn-primary-block" onclick="window.pwaManager.closeIosGuideModal()">Got It!</button>
+    </div>
+  </div>
+
+  <!-- Toast Notification Popover -->
+  <div id="appToast" class="app-toast"></div>
+
+  <!-- Scripts -->
+  <script src="/js/foodData.js"></script>
+  <script src="/js/db.js"></script>
+  <script src="/js/progress.js"></script>
+  <script src="/js/scanner.js"></script>
+  <script src="/js/pwa.js"></script>
+  <script src="/js/app.js"></script>
+</body>
+</html>
